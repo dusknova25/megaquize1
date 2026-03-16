@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dusknova Mega Quiz | Ultimate Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Hind+Siliguri:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050505;
+    --accent: #00FFFF;
+    --card: #0d0d0d;
+    --border: #1a1a1a;
+    --text: #ffffff;
+    --text-dim: #a0a0a0;
+  }
+
+  body { 
+    font-family: 'Inter', 'Hind Siliguri', sans-serif; 
+    background-color: var(--bg); color: var(--text); 
+    margin: 0; padding: 0; -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sticky Timer Header */
+  .header-nav {
+    position: fixed; top: 0; left: 0; width: 100%; height: 75px;
+    background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--border); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .timer-box {
+    padding: 10px 30px; border-radius: 50px; background: rgba(0, 255, 255, 0.05);
+    border: 2px solid var(--accent); color: var(--accent);
+    font-weight: 800; font-size: 24px; font-family: monospace;
+  }
+
+  .wrapper { max-width: 850px; margin: 120px auto 50px; padding: 20px; }
+
+  /* Branding */
+  .logo-container { text-align: center; margin-bottom: 35px; }
+  .logo-top { width: 190px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.2)); }
+
+  .premium-card {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 50px; border-radius: 20px; box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+  }
+
+  h1 { 
+    text-align: center; font-size: 40px; font-weight: 800; color: #ffffff; 
+    margin: 0 0 45px; letter-spacing: 4px; text-transform: uppercase;
+  }
+
+  /* Form Grid */
+  .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+  @media (max-width: 650px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .field { position: relative; margin-bottom: 25px; }
+  .field label { 
+    display: block; margin-bottom: 10px; font-size: 14px; font-weight: 700; 
+    text-transform: uppercase; color: var(--accent); letter-spacing: 1.5px;
+  }
+
+  input, select {
+    width: 100%; background: #000; border: 1px solid var(--border);
+    padding: 16px; border-radius: 12px; color: #fff; font-size: 15px;
+    transition: all 0.3s ease; box-sizing: border-box;
+  }
+
+  input:focus, select:focus { border-color: var(--accent); outline: none; background: #080808; }
+
+  /* Quiz Style */
+  .section-tag {
+    display: inline-block; padding: 10px 25px; background: var(--accent);
+    color: #000; font-weight: 800; font-size: 14px; border-radius: 6px;
+    margin-top: 60px; text-transform: uppercase;
+  }
+
+  .q-wrapper { margin: 40px 0 80px; border-bottom: 1px solid #1a1a1a; padding-bottom: 45px; }
+  .q-text { font-size: 26px; font-weight: 700; line-height: 1.6; margin-bottom: 30px; border-left: 6px solid var(--accent); padding-left: 25px; }
+  
+  .q-img { width: 100%; max-width: 500px; display: block; margin: 20px 0; border-radius: 12px; border: 1px solid var(--border); }
+
+  .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 600px) { .opt-grid { grid-template-columns: 1fr; } }
+
+  .opt-btn {
+    padding: 22px; background: #0a0a0a; border: 1px solid var(--border);
+    border-radius: 14px; cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; transition: 0.3s; font-weight: 600; font-size: 17px;
+  }
+
+  .opt-btn:hover { background: #151515; border-color: var(--accent); transform: translateX(8px); }
+  .opt-btn input { order: 2; margin-left: 15px; accent-color: var(--accent); transform: scale(1.5); }
+
+  .locked { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+
+  .btn-submit {
+    width: 100%; padding: 25px; background: var(--accent); color: #000;
+    border: none; border-radius: 14px; font-size: 22px; font-weight: 800;
+    cursor: pointer; text-transform: uppercase; letter-spacing: 3px;
+    margin-top: 50px; transition: 0.4s;
+  }
+
+  .btn-submit:hover { background: #fff; box-shadow: 0 20px 60px rgba(0,255,255,0.4); }
+
+  #successView { display: none; text-align: center; padding: 100px 20px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<audio id="finish" src="https://actions.google.com/sounds/v1/alarms/bugle_tune.ogg"></audio>
+
+<div class="header-nav" id="quizHeader" style="display:none;">
+  <div class="timer-box" id="clock">15:00</div>
+</div>
+
+<div class="wrapper">
+  <div class="premium-card" id="regPage">
+    <div class="logo-container">
+        <img src="https://i.postimg.cc/6pvK6fVx/6316729327491419859-120-removebg-preview.png" class="logo-top" alt="Logo">
+    </div>
+    <h1>MEGA QUIZ</h1>
+    
+    <div class="form-grid">
+      <div class="field"><label>নাম *</label><input type="text" id="name" class="req" placeholder="আপনার পূর্ণ নাম"></div>
+      <div class="field"><label>ফোন নম্বর *</label><input type="text" id="phone" class="req" placeholder="01XXXXXXXXX"></div>
+      <div class="field"><label>কলেজ *</label><input type="text" id="college" class="req"></div>
+      
+      <div class="field">
+        <label>HSC ব্যাচ *</label>
+        <select id="batch" class="req">
+            <option value="">নির্বাচন করুন</option>
+            <option value="HSC 25">HSC 25</option>
+            <option value="HSC 26">HSC 26</option>
+            <option value="HSC 27">HSC 27</option>
+        </select>
+      </div>
+
+      <div class="field"><label>ইমেইল (GMAIL) *</label><input type="email" id="gmail" class="req" placeholder="example@gmail.com"></div>
+      <div class="field"><label>ফেসবুক আইডি লিঙ্ক *</label><input type="text" id="fb" class="req" placeholder="https://facebook.com/username"></div>
+    </div>
+
+    <div class="field">
+      <label>তুমি কি Dusknova Class করেছ ? *</label>
+      <select id="isStudent" class="req">
+        <option value="">নির্বাচন করুন</option>
+        <option value="হ্যাঁ">হ্যাঁ</option>
+        <option value="না">না</option>
+        <option value="আগে পড়তাম">আগে পড়তাম</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>তুমি Dusknova সম্পর্কে কীভাবে জানতে পেরেছো? *</label>
+      <select id="knowSource" class="req">
+        <option value="">নির্বাচন করুন</option>
+        <option value="Facebook">Facebook</option>
+        <option value="YouTube">YouTube</option>
+        <option value="Friend / Referral">Friend / Referral</option>
+        <option value="Teacher">Teacher</option>
+        <option value="Website">Website</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <button class="btn-submit" onclick="startMegaQuiz()">কুইজ শুরু করুন</button>
+  </div>
+
+  <div id="quizPage" style="display:none;">
+    <div id="quizContent"></div>
+    <button class="btn-submit" id="finalSub" onclick="submitMegaQuiz()">কুইজ জমা দিন</button>
+  </div>
+
+  <div class="premium-card" id="successView">
+    <div class="logo-container">
+        <img src="https://i.postimg.cc/6pvK6fVx/6316729327491419859-120-removebg-preview.png" class="logo-top" style="width: 260px;" alt="Logo">
+    </div>
+    <h2 style="color: var(--accent); font-size: 50px; font-weight: 800; margin: 30px 0;">ধন্যবাদ!</h2>
+    <p style="font-size: 24px; font-weight: 700;">আপনার উত্তর সফলভাবে সংরক্ষিত হয়েছে।</p>
+    <div style="height: 1px; background: var(--border); margin: 40px 0;"></div>
+    <p style="color: var(--text-dim); font-size: 18px;">ফলাফল খুব শীঘ্রই জানানো হবে।</p>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAkfgxzY5wcfv_FmLDKpRSbBR0tbj2lVHw",
+    authDomain: "dnmegaquize.firebaseapp.com",
+    projectId: "dnmegaquize",
+    storageBucket: "dnmegaquize.firebasestorage.app",
+    messagingSenderId: "157028937050",
+    appId: "1:157028937050:web:e47a8e4414cf94d8799763",
+    measurementId: "G-Y78KBRBX3L"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  
+const megaData = [
+    
+
+{ 
+  section: "পদার্থবিজ্ঞান", 
+  questions: [
+      
+      { 
+        q: "\\( \\vec{A} + \\vec{B} = \\vec{A} - \\vec{B} \\) সম্পর্কটি কী শর্তে সঠিক?", 
+        options: ["\\( \\vec{A} = 0 \\)", "\\( \\vec{B} = 0 \\)", "\\( \\vec{A} = \\vec{B} \\)", "\\( \\vec{A} = -\\vec{B} \\)"], 
+        correct: 1 
+      },
+      { 
+        q: "\\( \\vec{A} - \\vec{B} \\) এবং \\( \\vec{A} \\times \\vec{B} \\), \\( (\\vec{A} \\neq \\vec{B}) \\) এর মধ্যবর্তী কোণ কত?", 
+        options: ["\\( 60^\\circ \\)", "\\( 90^\\circ \\)", "\\( 120^\\circ \\)", "\\( 45^\\circ \\)"], 
+        correct: 1 
+      },
+      { 
+        q: "একটি জাহাজ A, \\( 10 \\text{ kmh}^{-1} \\) বেগে পশ্চিম দিকে চলছে। আর একটি জাহাজ B, A এর সাপেক্ষে \\( 100 \\text{ km} \\) দক্ষিণ থেকে \\( 10 \\text{ kmh}^{-1} \\) বেগে উত্তর দিকে চলছে। কত সময় পরে এদের পারস্পরিক দূরত্ব সর্বনিম্ন হবে?", 
+        options: ["5 h", "\\( 5\\sqrt{2} \\text{ h} \\)", "\\( 10\\sqrt{2} \\text{ h} \\)", "0"], 
+        correct: 0 
+      },
+
+{ 
+        q: "একটি স্তম্ভের ওপর থেকে আলাদা ভরের দুটি বস্তু A ও B-কে প্রাথমিক গতিতে উলম্বভাবে যথাক্রমে ওপরে ও নিচে ছোড়া হলো। ভূমি স্পর্শ করার সময়-", 
+        options: ["A-এর বেগ > B-এর বেগ", "B-এর বেগ > A-এর বেগ", "A-এর বেগ = B-এর বেগ", "বেশি ভরের বস্তুটির বেগ বেশি হবে"], 
+        correct: 2 
+      },
+      { 
+        q: "কোনো বস্তুর গতিবেগ \\( (\\text{m}\\cdot\\text{s}^{-1}) \\) - সময় \\( (\\text{s}) \\) লেখচিত্র সময় অক্ষের সঙ্গে \\( 45^\\circ \\) কোণে আনত একটি সরলরেখা। বস্তুটির ত্বরণ \\( (\\text{m}\\cdot\\text{s}^{-2}) \\) এককে কত?", 
+        options: ["1", "\\( \\frac{1}{\\sqrt{2}} \\)", "\\( \\sqrt{2} \\)", "\\( \\frac{1}{\\sqrt{3}} \\)"], 
+        correct: 0 
+      },
+      { 
+        q: "একটি প্রাসের সর্বোচ্চ বিন্দুতে কণার দ্রুতি প্রাথমিক দ্রুতির অর্ধেক। অনুভূমিকের সঙ্গে প্রক্ষেপ কোণ হবে-", 
+        options: ["\\( 30^\\circ \\)", "\\( 45^\\circ \\)", "\\( 60^\\circ \\)", "\\( \\tan^{-1}(\\frac{1}{2}) \\)"], 
+        correct: 2 
+      },
+      { 
+        q: "সরল দোলগতিসম্পন্ন একটি কণা যখন তার সাম্যাবস্থান থেকে \\( 4 \\text{ cm} \\) দূরে, তখন তার ত্বরণ \\( 16 \\text{ cm}\\cdot\\text{s}^{-2} \\)। কণাটির পর্যায়কাল কত?", 
+        options: ["1 s", "2.572 s", "3.142 s", "6.028 s"], 
+        correct: 2 
+      },
+
+{ 
+
+          q: "সরল দোলগতিসম্পন্ন একটি বস্তুকণার ত্বরণ বনাম সরণ প্রদত্ত লেখচিত্র দ্বারা প্রকাশিত হলে, গতির দোলনকাল সেকেন্ড এককে হবে-", 
+
+          img: "https://i.postimg.cc/26Gfy4kY/image-2026-03-16-23-27-43.jpg", 
+
+          options: ["\\( \\frac{\\pi}{4} \\)", "\\( \\frac{\\pi}{2} \\)", "\\( \\pi \\)", "\\( 2\\pi \\)"], 
+
+          correct: 3 
+
+        },
+
+{ 
+  q: "দুটি একই ধরনের স্প্রিং P ও Q-এর স্প্রিং ধ্রুবক যথাক্রমে \\( K_P \\) ও \\( K_Q \\), যেখানে \\( K_P > K_Q \\)। প্রথমে (ক্ষেত্রে a) টেনে তাদের সমান দৈর্ঘ্য বৃদ্ধি করা হলো এবং পরে (ক্ষেত্রে b) তাদের সমান বল প্রয়োগ করে টানা হলো। কৃতকার্য \\( W_P \\) ও \\( W_Q \\)-এর সম্পর্ক হলো-", 
+  options: [
+    "\\( W_P = W_Q, W_P = W_Q \\)", 
+    "\\( W_P > W_Q, W_Q > W_P \\)", 
+    "\\( W_P < W_Q, W_Q < W_P \\)", 
+    "\\( W_P = W_Q, W_P > W_Q \\)"
+  ], 
+  correct: 1 
+},
+
+
+
+
+{ 
+
+  q: "তরঙ্গের সঙ্গে একই বেগে অগ্রসর হয়-", 
+
+  options: ["বিস্তার", "ভর", "ভরবেগ", "শক্তি"], 
+
+  correct: 3 
+
+},
+
+{ 
+
+  q: "নিচের কোনটি তরঙ্গ নয়?", 
+
+  options: ["আলো", "শব্দ", "এক্স-রশ্মি", "ক্যাথোড রশ্মি"], 
+
+  correct: 3 
+
+},
+
+{ 
+
+  q: "কোনো মাধ্যমে চলতরঙ্গের সমীকরণ \\( y = a \\sin(100\\pi t + \\frac{\\pi}{10}x) \\), যেখানে \\( x \\)-এর একক মিটার এবং \\( t \\)-এর একক সেকেন্ড। ওই মাধ্যমে তরঙ্গের বেগ হবে-", 
+
+  options: ["\\( 1 \\text{ km/s} \\)", "\\( 5 \\text{ km/s} \\)", "\\( 100 \\text{ m/s} \\)", "\\( 50 \\text{ m/s} \\)"], 
+
+  correct: 0 
+
+},
+
+
+
+{ 
+
+  q: "আদর্শ গ্যাসের ক্ষেত্রে \\( pV-p \\) লেখচিত্রটি হয়-", 
+
+  options: ["\\( p \\) অক্ষের সমান্তরাল", "\\( pV \\) অক্ষের সমান্তরাল", "কোনো অক্ষের সঙ্গে সমান্তরাল নয়", "সমপরাবৃত্ত"], 
+
+  correct: 0 
+
+},
+
+
+{ 
+  q: "প্রাথমিকভাবে \\( 27^\\circ \\text{C} \\) উষ্ণতায় থাকা একটি আদর্শ গ্যাসের উষ্ণতা \\( 6^\\circ \\text{C} \\) বৃদ্ধি করা হলো। গ্যাস অণুগুলির rms বেগ-", 
+  options: ["প্রায় 2% বৃদ্ধি পাবে", "প্রায় 2% হ্রাস পাবে", "প্রায় 1% বৃদ্ধি পাবে", "প্রায় 1% হ্রাস পাবে"], 
+  correct: 2 // চিত্র অনুযায়ী সঠিক উত্তর (C)
+},
+{ 
+  q: "কোন্ তাপমাত্রায় অক্সিজেন অণুর গড় বর্গবেগের বর্গমূল (rms বেগ) পৃথিবীর বায়ুমণ্ডলের মুক্তি বেগের ঠিক সমান হবে? (প্রদত্ত: অক্সিজেন অণুর ভর \\( m = 2.76 \\times 10^{-26} \\text{kg} \\), বোলজম্যান ধ্রুবক \\( k_B = 1.38 \\times 10^{-23} \\text{J} \\cdot \\text{K}^{-1} \\))", 
+  options: ["\\( 1.254 \\times 10^4 \\text{ K} \\)", "\\( 2.508 \\times 10^4 \\text{ K} \\)", "\\( 5.016 \\times 10^4 \\text{ K} \\)", "\\( 8.360 \\times 10^4 \\text{ K} \\)"], 
+  correct: 3 // চিত্র অনুযায়ী সঠিক উত্তর (D)
+}
+
+
+  ] 
+},
+
+
+
+{ 
+  section: "রসায়ন", 
+  questions: [
+    
+      { 
+        q: "ব্যবহারিক ক্ষেত্রে বেনজিনের বিকল্প রূপে ব্যবহৃত হয় কোনটি?", 
+        options: ["ক্লোরোফরম", "হেক্সেন", "জাইলিন", "টলুইন"], 
+        correct: 3 
+      },
+      { 
+        q: "সেমি মাইক্রো পদ্ধতিতে \\( H_2S \\) এর বিকল্প হিসেবে কোনটি ব্যবহৃত হয়?", 
+        options: ["\\( CH_3COOH \\)", "\\( CH_3CSNH_2 \\)", "\\( CH_3CONH_2 \\)", "\\( PbS \\)"], 
+        correct: 1 
+      },
+      { 
+        q: "MSDS এর পূর্ণরূপ কী?", 
+        options: ["Material Safety Data Scale", "Material Safety Data Sheet", "Material Service Sheet", "Manual Safety Data Sheet"], 
+        correct: 1 
+      },
+      { 
+        q: "আয়তনিক ফ্লাস্ক ব্যবহৃত হয় কোন কাজে?", 
+        options: ["মূল দ্রবণ তৈরিতে", "গুনগত বিশ্লেষণে", "প্রমাণ দ্রবণ তৈরিতে", "পাতনে"], 
+        correct: 2 
+      },
+      { 
+        q: "পলবুঙ্গি ব্যালেন্সে 20mg ভর ব্যবহৃত হলে তখন ব্যালেন্সটির সূক্ষ্মতম পরিমাপের ক্ষমতা কত?", 
+        options: ["0.4g", "0.04g", "0.004g", "0.0004g"], 
+        correct: 3 
+      },
+      { 
+        q: "নিচের কোন জোড়াটি ক্যান্সার সৃষ্টি ও কাঁচকে ক্ষয় করে?", 
+        options: ["\\( HCHO \\) ও \\( HF \\)", "\\( HCOOH \\) ও \\( HBr \\)", "\\( H-CO-H \\) ও \\( HF \\)", "\\( HCOONa \\) ও \\( HBr \\)"], 
+        correct: 0 
+      },
+      { 
+        q: "উত্তম কোয়াগুলেন্ট (Coagulant) কোনটি?", 
+        options: ["\\( Na^+ \\)", "\\( Fe^{3+} \\)", "\\( Ca^{2+} \\)", "\\( O^{2-} \\)"], 
+        correct: 1 
+      },
+      { 
+        q: "মেহেদির রঙ গঠনের মূল উপাদান কোনটি?", 
+        options: ["লাসোন", "লোশন", "ইথাইল অ্যালকোহল", "ট্যালক"], 
+        correct: 0 
+      },
+      { 
+        q: "বেবি পাওডারের মূল উপাদান কোনটি?", 
+        options: ["Butylated Hydroxy Anisole", "EDTA", "Iso propyl Alcohol", "Boric Acid"], 
+        correct: 3 
+      },
+      { 
+        q: "দুধ থেকে ছানা তৈরির প্রক্রিয়া কোনটি?", 
+        options: ["কোয়াগুলেশন", "সাসপেনশন", "ইমালসন", "কোনোটিই নয়"], 
+        correct: 0 
+      },
+      { 
+        q: "নিচের কোনটি সাসপেনশনের উদাহরণ নয়?", 
+        options: ["দুধ", "মাটিতে কাদার দ্রবণ", "রক্ত", "কলেরার ভ্যাকসিন"], 
+        correct: 0 
+      },
+      { 
+        q: "কোবাল্ট ব্লু কাঁচ কোন আলো সম্পূর্ণ শোষণ করে?", 
+        options: ["ইটের মত লাল", "কালচে বেগুনী", "সোনালী হলুদ", "নীলাভ সবুজ"], 
+        correct: 2 
+      },
+      { 
+        q: "অ্যামোনিয়া আয়ন শনাক্তকরণে কোনটি প্রয়োজন?", 
+        options: ["পটাশিয়াম পাইরো এন্টিমোনেট", "পটাশিয়াম ফেরো সায়ানাইড", "অক্সালিক এসিড", "নেসলার দ্রবণ"], 
+        correct: 3 
+      },
+      { 
+        q: "\\( Ag_2C_2O_4 \\) এর \\( K_{sp} \\) কোনটি?", 
+        options: ["\\( 4S^3 \\)", "\\( 27S^4 \\)", "\\( 108S^5 \\)", "\\( S^2 \\)"], 
+        correct: 0 
+      },
+      { 
+        q: "কোন কোয়ান্টাম সংখ্যার সেটটি সঠিক নয়?", 
+        options: ["\\( 2,0,0,+1/2 \\)", "\\( 3,2,-2,-1/2 \\)", "\\( 1,1,0,+1/2 \\)", "\\( 4,2,1,-1/2 \\)"], 
+        correct: 2 
+      }
+  ] 
+},
+
+{ 
+  section: "উচ্চতর গণিত", 
+  questions: [
+
+    {
+      q: "\\( P = \\begin{bmatrix}2 & 5 \\\\ 4 & 10\\end{bmatrix} \\) হলে \\( P^{-1} = ? \\)",
+      options: [
+        "\\( \\begin{bmatrix}10 & -5 \\\\ -4 & 2\\end{bmatrix} \\)",
+        "\\( \\frac{1}{10}\\begin{bmatrix}10 & -5 \\\\ -4 & 2\\end{bmatrix} \\)",
+        "\\( \\frac{1}{20}\\begin{bmatrix}10 & -5 \\\\ -4 & 2\\end{bmatrix} \\)",
+        "\\( P^{-1} \\text{ does not exist} \\)"
+      ],
+      correct: 3
+    },
+
+    {
+      q: "\\( \\begin{vmatrix} x+4 & 4 \\\\ -4 & x-4 \\end{vmatrix} \\) ম্যাট্রিক্সটি অব্যতিক্রমী হওয়ার শর্ত কোনটি?",
+      options: [
+        "\\( x \\ne -4 \\)",
+        "\\( x \\ne 0 \\)",
+        "\\( x \\ne 4 \\)",
+        "\\( x \\ne 4\\sqrt{2} \\)"
+      ],
+      correct: 1
+    },
+
+    {
+      q: "কোন ত্রিভুজের দুই বাহু \\( \\vec{u}=2\\hat{i}-\\hat{j} \\) এবং \\( \\vec{v}=\\hat{i}+\\hat{j} \\) হলে ত্রিভুজের ক্ষেত্রফল কত?",
+      options: [
+        "\\( \\frac{3}{2} \\)",
+        "\\( \\frac{\\sqrt{3}}{2} \\)",
+        "\\( \\frac{\\sqrt{5}}{2} \\)",
+        "\\( \\frac{\\sqrt{6}}{2} \\)"
+      ],
+      correct: 0
+    },
+
+
+
+ {
+    "q": "একটি সমতলে \\(\\vec{P} = -2\\hat{i} - \\hat{j}\\), \\(\\vec{Q} = 4\\hat{i}\\), \\(\\vec{R} = 3\\hat{i} + 3\\hat{j}\\) এবং \\(\\vec{S} = -3\\hat{i} + 2\\hat{j}\\) বিন্দু হলে, \\(PQRS\\) চতুর্ভুজটি অবশ্যই একটি—",
+    "options": [
+      "সামান্তরিক, যা রম্বস বা আয়তক্ষেত্র কোনটিই নয়",
+      "বর্গক্ষেত্র",
+      "আয়তক্ষেত্র, কিন্তু বর্গক্ষেত্র নয়",
+      "রম্বস, কিন্তু বর্গক্ষেত্র নয়"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "\\(a\\) এর কোন মানের জন্য \\(x - 3y + 2 = 0\\), \\(x - 6y + 3 = 0\\) এবং \\(x + ay = 0\\) রেখা তিনটি সমবিন্দু হবে?",
+    "options": [
+      "-3",
+      "3",
+      "6",
+      "12"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "\\((a, b)\\) এবং \\((-a, -b)\\) বিন্দুগামী রেখার সমীকরণ নির্ণয় কর।",
+    "options": [
+      "\\(by - ax = 0\\)",
+      "\\(ax - by = 0\\)",
+      "\\(bx + ay = 0\\)",
+      "\\(bx - ay = 0\\)"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "\\((2, 2)\\) ও \\((-6, 4)\\) বিন্দু দুটি নিচের কোন সরলরেখার বিপরীত পার্শ্বে অবস্থিত?",
+    "options": [
+      "\\(10x - y = 26\\)",
+      "\\(5x + 3y + 9 = 0\\)",
+      "\\(2x + 3y + 6 = 0\\)",
+      "\\(-10x + 2y + 39 = 0\\)"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "\\(3x + 4y = c\\) রেখাটি \\(x^2 + y^2 = 10x\\) বৃত্তের স্পর্শক হলে \\(c\\) এর একটি মান—",
+    "options": [
+      "0",
+      "7",
+      "-10",
+      "10"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "একটি চাকা 3.14 কিমি পথ যেতে 50 বার ঘোরে। চাকাটির ব্যাস কত?",
+    "options": [
+      "100 মিটার",
+      "20 মিটার",
+      "10 মিটার",
+      "314 মিটার"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "একটি ত্রিভুজের কোণগুলোর অনুপাত 2 : 3 : 7 হলে ক্ষুদ্রতম কোণের পরিমাণ কত ডিগ্রি?",
+    "options": [
+      "90°",
+      "120°",
+      "70°",
+      "কোনোটিই নয়"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "চিত্রে প্রদর্শিত \\(\\triangle ABC\\) এর ক্ষেত্রফল কত? (যেখানে \\(BC = 3\\) এবং \\(AC = 3\\sqrt{3}\\))",
+    "img": "https://i.postimg.cc/G3FGqKKj/Screenshot-2026-03-17-002257.jpg",
+    "options": [
+      "\\(9\\sqrt{2}\\)",
+      "9",
+      "\\(\\frac{9}{\\sqrt{2}}\\)",
+      "27"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "\\(\\sin 150^{\\circ} = ?\\)",
+    "options": [
+      "\\(1/\\sqrt{2}\\)",
+      "\\(-1/2\\)",
+      "1/2",
+      "\\(-1/\\sqrt{2}\\)"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "\\(\\frac{1}{\\sin 10^{\\circ}} - \\frac{\\sqrt{3}}{\\cos 10^{\\circ}}\\) এর মান কত?",
+    "options": [
+      "2",
+      "4",
+      "6",
+      "8"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "\\(\\frac{\\cos 8^{\\circ} + \\sin 8^{\\circ}}{\\cos 8^{\\circ} - \\sin 8^{\\circ}}\\) এর মান কোনটি?",
+    "options": [
+      "\\(\\tan 37^{\\circ}\\)",
+      "\\(\\tan 53^{\\circ}\\)",
+      "\\(\\tan 52^{\\circ}\\)",
+      "\\(\\tan 68^{\\circ}\\)"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "\\(f(x) = \\tan 4x\\) এর পর্যায় কত?",
+    "options": [
+      "\\(4\\pi\\)",
+      "\\(2\\pi\\)",
+      "\\(\\frac{\\pi}{2}\\)",
+      "\\(\\frac{\\pi}{4}\\)"
+    ],
+    "correct": 3
+  }
+
+
+
+  ] 
+},
+
+   
+    
+
+
+{ 
+  section: "জীববিজ্ঞান", 
+  questions: [
+     
+      { 
+        q: "কোনটি গলগি বডির বৈশিষ্ট্য?", 
+        options: ["সমগ্র সাইটোপ্লাজমে জালিকা তৈরি করে", "সাধারণত সংশ্লেষ ও ক্ষরণে কাজ করে", "আন্তঃকোষীয় পরিবহনে কাজ করে", "সকল প্রকৃত কোষে থাকে"], 
+        correct: 1 
+      },
+      { 
+        q: "নিচের কোনটি প্লাস্টিড বিহীন?", 
+        options: ["সাইকাস", "মস", "এগারিকাস", "স্পাইরোগাইরা"], 
+        correct: 2 // এগারিকাস (ছত্রাক) প্লাস্টিড বিহীন
+      },
+      { 
+        q: "উদ্ভিদ কোষের অভ্যন্তরে pH নিয়ন্ত্রণ করে কে?", 
+        options: ["নিউক্লিওপ্লাজম", "সাইটোপ্লাজম", "কোষ গহ্বর", "গ্লাইঅক্সিসোম"], 
+        correct: 2 
+      },
+      { 
+        q: "পুষ্টির অভাবে কোষ মৃত্যুকে কী বলে?", 
+        options: ["অ্যামাইটোসিস", "নেক্রোসিস", "নেক্রেসিস", "অ্যাপোপ্টোসিস"], 
+        correct: 1 
+      },
+      { 
+        q: "ম্যাডকাউ (Mad Cow) রোগের জন্য দায়ী কে?", 
+        options: ["ভিরিয়ন", "ভিরিয়েড", "প্রিয়ন", "নিউক্লিওক্যাপসিড"], 
+        correct: 2 
+      },
+      { 
+        q: "পরিবেশ দূষণের সূচক (Indicator) কোনটি?", 
+        options: ["Cycas", "Riccia", "Lichen", "Ulothrix"], 
+        correct: 1// Lichen বায়ু দূষণের সূচক হিসেবে পরিচিত
+      },
+      { 
+        q: "Ulothrix এর ক্লোরোপ্লাস্টের আকৃতি কেমন?", 
+        options: ["তারকাকার", "সূত্রাকার", "সাইফনাকৃতি", "গার্ডলাকৃতি"], 
+        correct: 3 
+      },
+      { 
+        q: "ওয়াটার ব্লুম (Water Bloom) সৃষ্টি করে কোনটি?", 
+        options: ["Mycrocytis", "Macrocytis", "Volvox", "Vaucheria"], 
+        correct: 0 
+      },
+      { 
+        q: "নিচের কোনটি আঙ্গুরের চিনি নামে পরিচিত?", 
+        options: ["গ্লুকোজ", "ফ্রুক্টোজ", "সুক্রোজ", "ল্যাকটোজ"], 
+        correct: 0 
+      },
+      { 
+        q: "চোখের ছানি অপারেশনে কোনটি ব্যবহৃত হয়?", 
+        options: ["ট্রিপসিন", "পেপসিন", "ইউরিবাইলেজ", "মিউসিন"], 
+        correct: 0 
+      },
+      { 
+        q: "নিচের কোনটি লিপোভাইরাস নয়?", 
+        options: ["ইনফুয়েঞ্জা", "হার্পিস", "HIV", "ভাক্সিনিয়া"], 
+        correct: 3 
+      },
+      { 
+        q: "কোষ চক্রে সংশ্লেষ (S-phase) দশায় ব্যয়িত সময় কত?", 
+        options: ["৩০-৪০%", "৩০-৫০%", "১০-২০%", "৯০-৯৫%"], 
+        correct: 1 
+      },
+      { 
+        q: "ছত্রাক বিদ্যাকে কী বলা হয়?", 
+        options: ["ফাইকোলজি", "মাইকোলজি", "সাইকোলজি", "মাইটোলজি"], 
+        correct: 1 
+      },
+      { 
+        q: "জেনেটিক ইঞ্জিনিয়ারিংয়ে কোনটি অপরিহার্যভাবে প্রয়োজন?", 
+        options: ["ভাইরাস", "ব্যাকটেরিয়া", "শৈবাল", "ছত্রাক"], 
+        correct: 1 
+      },
+      { 
+        q: "রিভার্স ট্রান্সক্রিপ্টশন (Reverse Transcription) ঘটে কোনটিতে?", 
+        options: ["HIV", "TIV", "TMV", "PRSV"], 
+        correct: 0 
+      }
+  ] 
+}
+
+
+  ];
+
+
+
+  let timer = 40 * 60;
+  let interval;
+  let startTime;
+
+  window.startMegaQuiz = function() {
+    const inputs = document.querySelectorAll(".req");
+    let valid = true;
+    inputs.forEach(i => {
+      if(!i.value.trim()){ i.style.borderColor = "#ff4444"; valid = false; }
+      else { i.style.borderColor = "var(--border)"; }
+    });
+
+    if(!valid) return alert("দয়া করে সবকটি ঘর পূরণ করুন!");
+
+    document.getElementById("beep").play();
+    document.getElementById("regPage").style.display = "none";
+    document.getElementById("quizPage").style.display = "block";
+    document.getElementById("quizHeader").style.display = "flex";
+    
+    renderQuestions();
+    startTimer();
+    startTime = Date.now();
+  };
+
+  function renderQuestions() {
+    const container = document.getElementById("quizContent");
+    let html = "";
+    megaData.forEach((s, sI) => {
+      html += `<div class="section-tag">${s.section}</div>`;
+      s.questions.forEach((q, qI) => {
+        const imagePart = q.img ? `<img src="${q.img}" class="q-img">` : "";
+        html += `
+          <div class="q-wrapper">
+            <div class="q-text">প্রশ্ন ${qI + 1}: ${q.q}</div>
+            ${imagePart}
+            <div class="opt-grid" id="lock-grp-${sI}-${qI}">
+              ${q.options.map((o, i) => `
+                <label class="opt-btn">
+                  <span>${o}</span>
+                  <input type="radio" name="s${sI}q${qI}" value="${i}" onclick="lockOption(${sI}, ${qI})">
+                </label>`).join('')}
+            </div>
+          </div>
+        `;
+      });
+    });
+    container.innerHTML = html;
+    MathJax.typeset();
+  }
+
+  window.lockOption = function(sI, qI) {
+    document.getElementById(`lock-grp-${sI}-${qI}`).classList.add("locked");
+  };
+
+  function startTimer() {
+    interval = setInterval(() => {
+      let m = Math.floor(timer / 60);
+      let s = timer % 60;
+      document.getElementById("clock").textContent = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+      if (timer <= 0) { clearInterval(interval); submitMegaQuiz(true); }
+      timer--;
+    }, 1000);
+  }
+
+  window.submitMegaQuiz = function(auto = false) {
+    if(!auto && !confirm("আপনি কি কুইজটি জমা দিতে চান?")) return;
+    
+    const endTime = Date.now();
+    const timeTaken = Math.floor((endTime - startTime) / 1000);
+    
+    clearInterval(interval);
+    document.getElementById("finish").play();
+    document.getElementById("finalSub").disabled = true;
+
+    let marks = 0;
+    megaData.forEach((s, sI) => {
+      s.questions.forEach((q, qI) => {
+        const sel = document.querySelector(`input[name="s${sI}q${qI}"]:checked`);
+        if(sel && parseInt(sel.value) === q.correct) marks += 1;
+      });
+    });
+
+    const payload = {
+      user_info: {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        college: document.getElementById("college").value,
+        batch: document.getElementById("batch").value,
+        email: document.getElementById("gmail").value,
+        fb_profile: document.getElementById("fb").value,
+        is_dusknova_student: document.getElementById("isStudent").value,
+        discovery_source: document.getElementById("knowSource").value
+      },
+      score: marks,
+      time_taken_seconds: timeTaken,
+      submitted_at: new Date().toLocaleString()
+    };
+
+    push(ref(db, 'mega_quiz_responses/'), payload)
+      .then(() => {
+        document.getElementById("quizPage").style.display = "none";
+        document.getElementById("quizHeader").style.display = "none";
+        document.getElementById("successView").style.display = "block";
+        window.scrollTo(0,0);
+      })
+      .catch((error) => {
+        console.error("Firebase Error:", error);
+        alert("ডাটা জমা দিতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।");
+        document.getElementById("finalSub").disabled = false;
+      });
+  };
+</script>
+
+<script>
+document.addEventListener("contextmenu", function(e){
+  e.preventDefault();
+});
+
+document.addEventListener("copy", function(e){
+  e.preventDefault();
+});
+
+document.addEventListener("selectstart", function(e){
+  e.preventDefault();
+});
+</script>
+
+<script>
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden){
+    alert("Tab change detected! Exam closed.");
+    window.location.href="about:blank";
+  }
+});
+</script>
+
+<script>
+document.addEventListener("keyup", function(e){
+  if(e.key === "PrintScreen"){
+    alert("Screenshot not allowed!");
+  }
+});
+</script>
+
+
+
+<script>
+document.onkeydown = function(e) {
+  if (e.keyCode == 123) {
+    return false;
+  }
+  if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)){
+    return false;
+  }
+}
+</script>
+
+<script>
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("selectstart", e => e.preventDefault());
+
+document.addEventListener("visibilitychange", function() {
+  if (document.hidden){
+    alert("Tab change detected!");
+  }
+});
+</script>
+
+
+
+
+
+
+</body>
+</html>
